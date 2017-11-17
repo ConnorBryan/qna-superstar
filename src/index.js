@@ -176,10 +176,10 @@ export async function outputFile(qna) {
       const username = USER_ID_TO_USERNAME.get(userID);
       const questions = dialogue.filter(message => message.includes('Q)')).length;
       const answers = dialogue.filter(message => message.includes('A)')).length;
-      console.log(dialogue, questions);
+
       questionCount += questions;
       answerCount += answers;
-      dialogues += `${username}:\n    ${dialogue.join('\n')}`;
+      dialogues += `${username}:\n    ${dialogue.join('\n    ')}`;
     });
 
     const template = `Responder: ${responder}\nQuestion count: ${questionCount}\nAnswer count: ${answerCount}`
