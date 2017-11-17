@@ -15,13 +15,15 @@ require('dotenv').load();
 import axios from 'axios';
 import fs from 'fs';
 
-export const BOT_TOKEN          = process.env.BOT_TOKEN;
-export const CHANNEL_ID         = process.env.CHANNEL_ID;
-export const INITIAL_MESSAGE_ID = process.env.INITIAL_MESSAGE_ID;
-export const FINAL_MESSAGE_ID   = process.env.FINAL_MESSAGE_ID;
-export const RESPONDER          = process.env.RESPONDER;
-export const QNA_MARKER         = process.env.QNA_MARKER        || '[Q&A]';
-export const OUTPUT_FILE_NAME   = process.env.OUTPUT_FILE_NAME  || 'q&a.txt';
+const {
+  BOT_TOKEN,
+  CHANNEL_ID,
+  INITIAL_MESSAGE_ID,
+  FINAL_MESSAGE_ID,
+  RESPONDER,
+  QNA_MARKER = '[Q&A]',
+  OUTPUT_FILE_NAME = 'Q&A.txt',
+} = process.env;
 
 [BOT_TOKEN, CHANNEL_ID, INITIAL_MESSAGE_ID, FINAL_MESSAGE_ID, RESPONDER]
   .forEach(environmentVariable => {
@@ -225,7 +227,7 @@ export function findFinalMessage(messages) {
 }
 
 /**
- * @function findFinalMessage
+ * @function isFromResponder
  * @desc Given a message, was it sent by the responder?
  * @param {object} message
  * @returns {boolean}
