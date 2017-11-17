@@ -50,6 +50,12 @@ beASuperStar();
 
 /* 🌠 🌠 🌠 */
 
+/**
+ * @async
+ * @function beASuperStar
+ * @desc Parse a Q&A session and output a file to the specified directory.
+ * @returns {boolean}
+ */
 export async function beASuperStar() {
   try {
     console.time(QNA_TIMER);
@@ -85,12 +91,21 @@ export async function beASuperStar() {
   } catch (e) {
     console.error(`🌠 I tried my best... I promise. 🌠`, e);
   } finally {
-    console.timeEnd(QNA_TIMER);    
+    console.timeEnd(QNA_TIMER);
+
+    return true;
   }
 }
 
 /* 🌠 🌠 🌠 */
 
+/**
+ * @async
+ * @function get
+ * @desc Retrieve an array of messages from the Discord API.
+ * @param {string} path
+ * @returns {Array<object>}
+ */
 export async function get(path) {
   try {
     const { data } = await axios.get(`${API_URL}/${path}`, AXIOS_CONFIG);
@@ -101,16 +116,14 @@ export async function get(path) {
   }
 }
 
-export async function post(path, data) {
-  try {
-    const { data } = await axios.post(`${API_URL}/${path}`, AXIOS_CONFIG);
-
-    return data;
-  } catch (e) {
-    console.error(`Unable to POST to ${path}`, e);
-  }
-}
-
+/**
+ * @async
+ * @function getMessages
+ * @desc Given a channel ID and a starting message, retrieve relevant messages.
+ * @param {string} channelID
+ * @param {string} after - messageID 
+ * @returns {Array<object>}
+ */
 export async function getMessages(channelID, after) {
   try {
     return await get(`/channels/${channelID}/messages?after=${after}&limit=100`);
@@ -119,6 +132,12 @@ export async function getMessages(channelID, after) {
   }
 }
 
+/**
+ * @async
+ * @function getFullMessages
+ * @desc Retrieve all messages between the initial message and the final message..
+ * @returns {Array<object>}
+ */
 export async function getFullMessages() {
   try {
     let messages = (await getMessages(CHANNEL_ID, INITIAL_MESSAGE_ID)).reverse();
@@ -195,18 +214,43 @@ export async function outputFile(qna) {
   }
 }
 
+/**
+ * @function findFinalMessage
+ * @desc Given an array of messages, find the index of the specified final message.
+ * @param {Array<object>} messages 
+ * @returns {number}
+ */
 export function findFinalMessage(messages) {
   return messages.findIndex(({ id }) => id === FINAL_MESSAGE_ID);
 }
 
+/**
+ * @function findFinalMessage
+ * @desc Given a message, was it sent by the responder?
+ * @param {object} message
+ * @returns {boolean}
+ */
 export function isFromResponder({ author: { username } }) {
   return username === RESPONDER;
 }
 
+/**
+ * @function hasQuestion
+ * @desc Given a message, does it contain a question?
+ * @param {object} message
+ * @returns {boolean}
+ */
 export function hasQuestion({ content }) {
   return content.includes(QNA_MARKER);
 }
 
+/**
+ * @function parseQuestion
+ * @desc Given a message, return both the question asker's userID and the question's content.
+ *       If the userID map doesn't have a record of the userID, add it.
+ * @param {object} message
+ * @returns {object}
+ */
 export function parseQuestion({ content, author: { id, username } }) {
   const question = content
     .split(' ')
@@ -218,6 +262,14 @@ export function parseQuestion({ content, author: { id, username } }) {
   return { id, question };
 }
 
+/**
+ * @function addAQuestion
+ * @desc Update the Q&A map with a question at the specified user ID.
+ * @param {Map} qna
+ * @param {string} id
+ * @param {string} question
+ * @returns {Map}
+ */
 export function addAQuestion(qna, id, question) {
   const previousQuestions = qna.get(id);
 
@@ -226,6 +278,12 @@ export function addAQuestion(qna, id, question) {
   return qna.set(id, previousQuestions ? previousQuestions.concat(question) : [question]);
 }
 
+/**
+ * @function hasTaggedUser
+ * @desc Given a message, does it contain a tagged user? e.g. @connor#5456
+ * @param {object} message
+ * @returns {boolean}
+ */
 export function hasTaggedUser({ content }) {
   return content
     .split(' ')
@@ -233,6 +291,12 @@ export function hasTaggedUser({ content }) {
     .length > 0;
 }
 
+/**
+ * @function parseTaggedUser
+ * @desc Given a message, return the user ID of the first tagged user.
+ * @param {object} message
+ * @returns {string}
+ */
 export function parseTaggedUser({ content }) {
   const taggedUser = content
     .split(' ')
@@ -242,6 +306,12 @@ export function parseTaggedUser({ content }) {
   return taggedUser.substr(2, taggedUser.length - 3);
 }
 
+/**
+ * @function parseAnswer
+ * @desc Given a message, return all non-user-tagged words as a single string.
+ * @param {object} message
+ * @returns {string}
+ */
 export function parseAnswer({ content }) {
   return content
     .split(' ')
@@ -249,6 +319,12 @@ export function parseAnswer({ content }) {
     .join(' ');
 }
 
+/**
+ * @function addAnAnswer
+ * @desc Update the Q&A map with an answer at the specified user ID.
+ * @param {object} message
+ * @returns {string}
+ */
 export function addAnAnswer(qna, id, answer) {
   const previousQuestions = qna.get(id) || [];
 
@@ -257,6 +333,12 @@ export function addAnAnswer(qna, id, answer) {
   return qna.set(id, previousQuestions.concat(answer));
 }
 
+/**
+ * @function addResponderUsername
+ * @desc Add an entry in the user ID map for the responder for file output purposes.
+ * @param {object} message
+ * @returns {Map}
+ */
 export function addResponderUsername({ author: { username } }) {
-  USER_ID_TO_USERNAME.set(RESPONDER, username);
+  return USER_ID_TO_USERNAME.set(RESPONDER, username);
 }
